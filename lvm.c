@@ -757,6 +757,34 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         }
         continue;
       }
+	  case OP_PUSHC: {
+		  incr_c(L);
+		  continue;
+	  }
+	  case OP_POPC: {
+		  int n = GETARG_B(i);
+		  int d;
+		  for (; n > 0; --n)
+		  {
+			  lua_assert(L->topc > 0);
+			  d = L->basec[-- L->topc];
+			  for (; L->topd > d;)
+			  {
+				  setobjs2s(L, L->top, L->stack + L->based[-- L->topd]);
+				  incr_top(L);
+				  Protect(luaD_call(L, L->top - 1, 0));
+				  L->top = L->ci->top;
+			  }
+			  
+		  }
+		  continue;
+	  }
+	  case OP_PUSHD: {
+		  StkId rb = RB(i) - cl->p->sized;
+		  setobjs2s(L, rb, ra);
+		  incr_d(L, rb);
+		  continue;
+	  }
     }
   }
 }

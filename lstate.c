@@ -55,6 +55,13 @@ static void stack_init (lua_State *L1, lua_State *L) {
   setnilvalue(L1->top++);  /* `function' entry for this `ci' */
   L1->base = L1->ci->base = L1->top;
   L1->ci->top = L1->top + LUA_MINSTACK;
+
+  L1->basec = luaM_newvector(L, BASIC_STACK_SIZE + EXTRA_STACK, int);
+  L1->sizec = BASIC_STACK_SIZE + EXTRA_STACK;
+  L1->topc = 0;
+  L1->based = luaM_newvector(L, BASIC_STACK_SIZE + EXTRA_STACK, int);
+  L1->sized = BASIC_STACK_SIZE + EXTRA_STACK;
+  L1->topd = 0;
 }
 
 

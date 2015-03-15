@@ -12,6 +12,19 @@
 #include "lstate.h"
 #include "lzio.h"
 
+#define incr_c(L) \
+	if (L->topc == L->sizec) {\
+		luaM_reallocvector(L, L->basec, L->sizec, 2 * L->sizec, int);\
+		L->sizec += L->sizec;\
+	} \
+	L->basec[L->topc++] = L->topd;
+
+#define incr_d(L, p) \
+	if (L->topd == L->sized) {\
+		luaM_reallocvector(L, L->based, L->sized, 2 * L->sized, int);\
+		L->sized += L->sized;\
+	} \
+	L->based[L->topd++] = (p - L->stack);
 
 #define luaD_checkstack(L,n)	\
   if ((char *)L->stack_last - (char *)L->top <= (n)*(int)sizeof(TValue)) \

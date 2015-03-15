@@ -345,6 +345,7 @@ static void open_func (LexState *ls, FuncState *fs) {
   f->source = ls->source;
   f->maxstacksize = 2;  /* registers 0/1 are always valid */
   fs->h = luaH_new(L, 0, 0);
+  fs->depthc = 0;
   /* anchor table of constants and prototype (to avoid being collected) */
   sethvalue2s(L, L->top, fs->h);
   incr_top(L);
@@ -590,6 +591,23 @@ static void body (LexState *ls, expdesc *e, int needself, int line) {
   check_match(ls, TK_END, TK_FUNCTION, line);
   close_func(ls);
   pushclosure(ls, &new_fs, e);
+}
+
+
+static void deferstat (LexState *ls, int line) {
+	/* defer chunk END */
+	FuncState new_fs;
+	expdesc e;
+	open_func(ls, &new_fs);
+	new_fs.f->linedefined = line;
+	luaX_next(ls);
+	chunk(ls);
+	new_fs.f->lastlinedefined = ls->linenumber;
+	check_match(ls, TK_END, TK_DEFER, new_fs.f->linedefined);
+	close_func(ls);
+	pushclosure(ls, &new_fs, &e);
+	luaK_exp2nextreg(ls->fs, &e);
+	luaK_codeABC(ls->fs, OP_PUSHD, ls->fs->freereg - 1, ls->fs->f->sized ++, 0);
 }
 
 
@@ -1269,6 +1287,10 @@ static void retstat (LexState *ls) {
 static int statement (LexState *ls) {
   int line = ls->linenumber;  /* may be needed for error messages */
   switch (ls->t.token) {
+	case TK_DEFER: {
+	  deferstat(ls, line);
+	  return 0;
+	}
     case TK_IF: {  /* stat -> ifstat */
       ifstat(ls, line);
       return 0;
@@ -1323,6 +1345,8 @@ static int statement (LexState *ls) {
 static void chunk (LexState *ls) {
   /* chunk -> { stat [`;'] } */
   int islast = 0;
+  ++ls->fs->depthc;
+  luaK_codeABC(ls->fs, OP_PUSHC, 0, 0, 0);
   enterlevel(ls);
   while (!islast && !block_follow(ls->t.token)) {
     islast = statement(ls);
@@ -1332,6 +1356,8 @@ static void chunk (LexState *ls) {
     ls->fs->freereg = ls->fs->nactvar;  /* free registers */
   }
   leavelevel(ls);
+  luaK_codeABC(ls->fs, OP_POPC, 0, 1, 0);
+  --ls->fs->depthc;
 }
 
 /* }====================================================================== */

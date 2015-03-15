@@ -98,7 +98,17 @@ static void setprogdir (lua_State *L) {
   char buff[MAX_PATH + 1];
   char *lb;
   DWORD nsize = sizeof(buff)/sizeof(char);
+  // BEGIN PATCH: Lua Unicode
+  // the following lines are a unicode patch for "incompatible types" error
+  // http://lua-users.org/lists/lua-l/2006-09/msg00033.html	(error report)
+  // http://lua-users.org/lists/lua-l/2006-06/msg00427.html (patch solution)
+  // DWORD n = GetModuleFileName(NULL, buff, nsize);
+#ifdef UNICODE
+  DWORD n = GetModuleFileNameA(NULL, buff, nsize);
+#else
   DWORD n = GetModuleFileName(NULL, buff, nsize);
+#endif
+  // END PATCH: Lua Unicode
   if (n == 0 || n == nsize || (lb = strrchr(buff, '\\')) == NULL)
     luaL_error(L, "unable to get ModuleFileName");
   else {
@@ -129,7 +139,6 @@ static void *ll_load (lua_State *L, const char *path) {
   if (lib == NULL) pusherror(L);
   return lib;
 }
-
 
 static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym) {
   lua_CFunction f = (lua_CFunction)GetProcAddress((HINSTANCE)lib, sym);

@@ -72,6 +72,7 @@ typedef struct FuncState {
   lu_byte nactvar;  /* number of active local variables */
   upvaldesc upvalues[LUAI_MAXUPVALUES];  /* upvalues */
   unsigned short actvar[LUAI_MAXVARS];  /* declared-variable stack */
+  int depthc;
 } FuncState;
 
 

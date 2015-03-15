@@ -250,6 +250,7 @@ typedef struct Proto {
   lu_byte numparams;
   lu_byte is_vararg;
   lu_byte maxstacksize;
+  lu_byte sized;
 } Proto;
 
 

@@ -617,7 +617,9 @@ static void add_value (MatchState *ms, luaL_Buffer *b, const char *s,
       add_s(ms, b, s, e);
       return;
     }
-    case LUA_TFUNCTION: {
+    case LUA_TFUNCTION: 
+	case LUA_TUSERDATA: // User data items are also callable in some circumstances (i.e. LuaInterface static methods)
+	{
       int n;
       lua_pushvalue(L, 3);
       n = push_captures(ms, s, e);

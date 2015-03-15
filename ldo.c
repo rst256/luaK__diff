@@ -287,7 +287,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     }
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = func;
-    L->base = ci->base = base;
+    L->base = ci->base = base + p->sized;
     ci->top = L->base + p->maxstacksize;
     lua_assert(ci->top <= L->stack_last);
     L->savedpc = p->code;  /* starting point */

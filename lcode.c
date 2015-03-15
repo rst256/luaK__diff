@@ -62,6 +62,7 @@ int luaK_jump (FuncState *fs) {
 
 
 void luaK_ret (FuncState *fs, int first, int nret) {
+  luaK_codeABC(fs, OP_POPC, 0, fs->depthc, 0);
   luaK_codeABC(fs, OP_RETURN, first, nret+1, 0);
 }
 

@@ -365,7 +365,8 @@
 */
 #define LUA_COMPAT_OPENLIB
 
-
+// kevinh - For LuaInterface we want more debugging messages
+#define LUA_USE_APICHECK 
 
 /*
 @@ luai_apicheck is the assert macro used by the Lua-C API.
@@ -376,7 +377,9 @@
 */
 #if defined(LUA_USE_APICHECK)
 #include <assert.h>
-#define luai_apicheck(L,o)	{ (void)L; assert(o); }
+// kevinh - we want to send API failures out through the regular error reporting mechanism
+// #define luai_apicheck(L,o)	{ (void)L; assert(o); }
+#define luai_apicheck(L,_ok) (void)( (!!(_ok)) || (luaG_runerror(L, "LuaAPI failure: %s, file '%s', line %d", #_ok, __FILE__, __LINE__), 0))
 #else
 #define luai_apicheck(L,o)	{ (void)L; }
 #endif
